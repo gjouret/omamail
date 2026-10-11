@@ -424,20 +424,47 @@ fn walk(
     }
     Ok(())
 }
-// Some senders put the markup itself in the text/plain alternative. That part
-// is a page of tags when shown as text, so the HTML part is read instead. Text
-// that merely opens with an angle bracket — a quoted address, a sentence about
-// a tag — neither opens with a whole tag nor ends on one.
+// Be conservative: angle-bracket prose is a legitimate plain alternative.
+// Require a document root or nested markup, not merely a closing tag in text.
 fn markup_as_text(plain: &str) -> bool {
-    static OPENS: OnceLock<Regex> = OnceLock::new();
-    let opens = OPENS.get_or_init(|| {
-        Regex::new(
-            r"(?i)^<(?:!--|!doctype\s|(?:html|head|body|div|table|style|center|span|p)[\s>])",
-        )
-        .unwrap()
-    });
     let text = plain.trim();
-    opens.is_match(text) && text.ends_with('>') && text.contains("</")
+    if !text.starts_with('<') || !text.ends_with('>') || !text.contains("</") {
+        return false;
+    }
+    let Ok(root) = super::html::parse(text) else {
+        return false;
+    };
+    if root
+        .children
+        .iter()
+        .any(|n| n.kind == "text" && !n.text.trim().is_empty())
+    {
+        return false;
+    }
+    let Some(first) = root.children.iter().find(|n| n.kind != "text") else {
+        return false;
+    };
+    if matches!(first.name.as_str(), "html" | "head" | "body") {
+        return true;
+    }
+    if !matches!(
+        first.name.as_str(),
+        "div" | "table" | "style" | "center" | "span" | "p"
+    ) {
+        return false;
+    }
+    // A leading style block is only evidence together with structural markup.
+    if first.name == "style" {
+        return root
+            .children
+            .iter()
+            .any(|n| matches!(n.name.as_str(), "html" | "body" | "div" | "table"));
+    }
+    first
+        .children
+        .iter()
+        .find(|n| n.kind != "text" || !n.text.trim().is_empty())
+        .is_some_and(|n| n.kind != "text")
 }
 pub fn prepare(message: &Value, now: i64) -> Result<Value> {
     prepare_content(message, now, true)

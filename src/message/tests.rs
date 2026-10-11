@@ -115,6 +115,10 @@ fn markup_in_the_plain_alternative_is_read_from_the_html_part() {
         "<paul@example.com> wrote:\n> see </p> in the docs",
         "<div> is a block element, <span> is not.\nRegards",
         "Send money easily",
+        "<div> is a block element; close it with </div>",
+        "<p>See the docs for </p>",
+        "<!-- example --> <div> is closed with </div>",
+        "<div><span>code</span></div> is an example ending with </p>",
     ] {
         let body = &super::content::prepare(&message(text, Some(html)), 0).unwrap()["body"];
         assert_eq!(body["source"], "plain", "{text}");
