@@ -546,8 +546,7 @@ Item {
     else close()
   }
 
-  // How a message is read is a preference and survives; the heavy-document
-  // override is a per-message decision about one specific message and does not.
+  // The rich-document override belongs to one message.
   function openMessage(id) {
     if (!service) return
     pendingComposeMode = ""
