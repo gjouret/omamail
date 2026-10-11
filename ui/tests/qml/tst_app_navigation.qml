@@ -292,6 +292,9 @@ Item {
       compare(app.displayMessages.length, 2)
       compare(app.displayMessages[0].id, "message-1")
       compare(app.displayMessages[0].unread, false)
+      app.openMessage("message-1")
+      compare(app.displayMessages.length, 2, "reopening the selected row retains it")
+      compare(app.displayMessages[0].id, "message-1")
       app.openMessage("message-2")
       compare(app.displayMessages.length, 1)
       compare(app.displayMessages[0].id, "message-2")
@@ -309,6 +312,9 @@ Item {
       compare(app.displayMessages.length, 1)
       compare(app.displayMessages[0].id, rowId)
       compare(app.displayMessages[0].unread, false)
+      app.openMessage(rowId)
+      compare(app.displayMessages.length, 1, "reopening a qualified retained row keeps it")
+      compare(app.displayMessages[0].id, rowId)
       mailService.mailboxKey = "inbox"
       compare(app.displayMessages.length, 0)
       mailService.mailboxKey = "unread"

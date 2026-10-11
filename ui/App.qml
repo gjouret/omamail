@@ -187,6 +187,7 @@ Item {
 
   function rememberUnreadRow(id) {
     if (!service || service.mailboxKey !== "unread") { heldUnreadRow = null; return }
+    if (heldUnreadRow && heldUnreadRow.scope === unreadScope && heldUnreadRow.row.id === id) return
     var rows = service.messages || []
     var index = Model.indexById(rows, id)
     heldUnreadRow = index < 0 ? null
@@ -194,10 +195,7 @@ Item {
   }
 
   property string cursorId: ""
-  // The rows ticked for a bulk action, by id. Like the cursor, a fact about
-  // this window rather than about the mailbox, and pruned the same way when
-  // the list under it changes. Only the list acts on it: in the reader there
-  // is one message and it is the one open.
+  // Bulk selections belong to this window and are pruned with the list.
   property var checkedIds: []
   // The mailbox the ticks belong to. An IMAP id is a UID and a folder, unique
   // only inside one account, so a tick carried across an account switch
@@ -556,10 +554,10 @@ Item {
     reader.forceRichAnyway = false
     cursorId = String(id || "")
     rememberUnreadRow(cursorId)
-    service.select(cursorId)
+    if (!heldUnreadRow || service.selectedId !== cursorId || !service.selectedMessage
+        || service.selectionIsPreview) service.select(cursorId)
     // A message opens over the list. From anywhere else — a notification
     // arriving while Settings is up — it opens over a fresh list, because
-    // Back from a message means the list it came from.
     if (page !== "list" && page !== "reader") nav = Nav.resetTo(nav, "list")
     pushEntry("reader", { id: cursorId })
   }
