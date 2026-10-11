@@ -108,6 +108,7 @@ fn markup_in_the_plain_alternative_is_read_from_the_html_part() {
         "<DIV class=\"x\"><P>Send money easily</P></DIV>",
         "<head><style>p { color: red; }</style></head><body><p>Send money easily</p></body>",
         "<body><p>Send money easily</p></body>",
+        "<style>p { color: red; }</style><div><p>Send money easily</p></div>",
     ] {
         let body = &super::content::prepare(&message(markup, Some(html)), 0).unwrap()["body"];
         assert_eq!(body["source"], "html", "{markup}");
@@ -122,6 +123,7 @@ fn markup_in_the_plain_alternative_is_read_from_the_html_part() {
         "<html> is the root element; close it with </html>",
         "<head> contains metadata; close it with </head>",
         "<body> contains visible content; close it with </body>",
+        "<style> declares CSS </style><body> contains content </body>",
         "<!-- example --> <div> is closed with </div>",
         "<div><span>code</span></div> is an example ending with </p>",
     ] {

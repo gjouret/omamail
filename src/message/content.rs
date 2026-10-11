@@ -450,18 +450,19 @@ fn markup_as_text(plain: &str) -> bool {
     ) {
         return false;
     }
-    // A leading style block is only evidence together with structural markup.
-    if first.name == "style" {
-        return root
-            .children
+    let begins_with_markup = |n: &super::html::Node| {
+        n.children
             .iter()
-            .any(|n| matches!(n.name.as_str(), "html" | "body" | "div" | "table"));
+            .find(|child| child.kind != "text" || !child.text.trim().is_empty())
+            .is_some_and(|child| child.kind != "text")
+    };
+    // Style text alone is ambiguous too: require a nested structural sibling.
+    if first.name == "style" {
+        return root.children.iter().any(|n| {
+            matches!(n.name.as_str(), "html" | "body" | "div" | "table") && begins_with_markup(n)
+        });
     }
-    first
-        .children
-        .iter()
-        .find(|n| n.kind != "text" || !n.text.trim().is_empty())
-        .is_some_and(|n| n.kind != "text")
+    begins_with_markup(first)
 }
 pub fn prepare(message: &Value, now: i64) -> Result<Value> {
     prepare_content(message, now, true)
