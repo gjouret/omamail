@@ -425,7 +425,7 @@ fn walk(
     Ok(())
 }
 // Be conservative: angle-bracket prose is a legitimate plain alternative.
-// Require a document root or nested markup, not merely a closing tag in text.
+// Require nested markup, not merely a document-root name or closing tag in text.
 fn markup_as_text(plain: &str) -> bool {
     let text = plain.trim();
     if !text.starts_with('<') || !text.ends_with('>') || !text.contains("</") {
@@ -444,12 +444,9 @@ fn markup_as_text(plain: &str) -> bool {
     let Some(first) = root.children.iter().find(|n| n.kind != "text") else {
         return false;
     };
-    if matches!(first.name.as_str(), "html" | "head" | "body") {
-        return true;
-    }
     if !matches!(
         first.name.as_str(),
-        "div" | "table" | "style" | "center" | "span" | "p"
+        "html" | "head" | "body" | "div" | "table" | "style" | "center" | "span" | "p"
     ) {
         return false;
     }

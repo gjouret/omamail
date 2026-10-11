@@ -106,6 +106,8 @@ fn markup_in_the_plain_alternative_is_read_from_the_html_part() {
         "\n\n<!--[if gte mso 9]><style>.a { display: block; }</style><![endif]-->\n<div><p>Send money easily</p></div>\n",
         "<html><body><p>Send money easily</p></body></html>",
         "<DIV class=\"x\"><P>Send money easily</P></DIV>",
+        "<head><style>p { color: red; }</style></head><body><p>Send money easily</p></body>",
+        "<body><p>Send money easily</p></body>",
     ] {
         let body = &super::content::prepare(&message(markup, Some(html)), 0).unwrap()["body"];
         assert_eq!(body["source"], "html", "{markup}");
@@ -117,6 +119,9 @@ fn markup_in_the_plain_alternative_is_read_from_the_html_part() {
         "Send money easily",
         "<div> is a block element; close it with </div>",
         "<p>See the docs for </p>",
+        "<html> is the root element; close it with </html>",
+        "<head> contains metadata; close it with </head>",
+        "<body> contains visible content; close it with </body>",
         "<!-- example --> <div> is closed with </div>",
         "<div><span>code</span></div> is an example ending with </p>",
     ] {
